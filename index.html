@@ -208,7 +208,7 @@ function selectDay(day) { selectedDayName = day; goToPage(4); }
 function buildGoogleFormUrl() {
     const url = new URL("https://docs.google.com/forms/d/e/1FAIpQLSfGurzOpeGmiNCAON1h8Np5jSJCdw4Kz1TCJNiFWlpCLLeVLA/viewform");
     url.searchParams.set("usp", "pp_url");
-    url.searchParams.set("entry.1168906527", selectedPlace.replace(/[\\p{Emoji_Presentation}\\p{Extended_Pictographic}\\uFE0F]/gu, "").trim());
+    url.searchParams.set("entry.1168906527", selectedPlace.replace(/[\u{1F000}-\u{1FAFF}\u2600-\u27BF\uFE0F]/gu, "").trim());
     url.searchParams.set("entry.845176421", selectedDayName);
     url.searchParams.set("entry.1004992535", selectedTime);
     return url.toString();
@@ -218,7 +218,7 @@ function selectTime() {
     const input = document.getElementById("timeInput");
     if (!input.value) { alert("اول یک ساعت انتخاب کن ❤️"); return; }
     selectedTime = input.value;
-    submitToGoogleForms();
+    document.getElementById("googleFormLink").href = buildGoogleFormUrl();
     document.getElementById("finalPlace").innerText = "📍 محل قرار: " + selectedPlace;
     document.getElementById("finalDay").innerText = "📅 روز: " + selectedDayName;
     document.getElementById("finalTime").innerText = "⏰ ساعت: " + selectedTime;
