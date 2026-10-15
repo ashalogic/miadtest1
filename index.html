@@ -151,16 +151,63 @@ function goToPage(pageNumber) {
 }
 
 const noButton = document.getElementById("noButton");
-function moveNoButton() {
-    const maxX = Math.max(10, window.innerWidth - noButton.offsetWidth - 20);
-    const maxY = Math.max(10, window.innerHeight - noButton.offsetHeight - 20);
+let noButtonHasMoved = false;
+
+function moveNoButton(pointerX, pointerY) {
+    const margin = 16;
+    const buttonWidth = noButton.offsetWidth;
+    const buttonHeight = noButton.offsetHeight;
+    const maxX = Math.max(margin, window.innerWidth - buttonWidth - margin);
+    const maxY = Math.max(margin, window.innerHeight - buttonHeight - margin);
+    const current = noButton.getBoundingClientRect();
+    const pointer = Number.isFinite(pointerX) ? { x: pointerX, y: pointerY } : null;
+    const candidates = [];
+
+    for (let i = 0; i < 24; i++) {
+        const x = margin + Math.random() * Math.max(0, maxX - margin);
+        const y = margin + Math.random() * Math.max(0, maxY - margin);
+        const dx = x + buttonWidth / 2 - (pointer ? pointer.x : current.left + buttonWidth / 2);
+        const dy = y + buttonHeight / 2 - (pointer ? pointer.y : current.top + buttonHeight / 2);
+        const distance = Math.hypot(dx, dy);
+        const currentDistance = Math.hypot(x - current.left, y - current.top);
+        candidates.push({ x, y, score: distance + currentDistance * 0.35 });
+    }
+
+    candidates.sort((a, b) => b.score - a.score);
+    let destination = candidates[0];
+    if (noButtonHasMoved && candidates.length > 1) {
+        const currentDistance = Math.hypot(destination.x - current.left, destination.y - current.top);
+        if (currentDistance < 100) destination = candidates[1];
+    }
+
+    noButtonHasMoved = true;
     noButton.style.position = "fixed";
-    noButton.style.left = Math.max(10, Math.random() * maxX) + "px";
-    noButton.style.top = Math.max(10, Math.random() * maxY) + "px";
-    noButton.animate([{ transform: "scale(1)" }, { transform: "scale(.7)" }, { transform: "scale(1.2)" }, { transform: "scale(1)" }], { duration: 300 });
+    noButton.style.left = destination.x + "px";
+    noButton.style.top = destination.y + "px";
+    noButton.style.zIndex = "20";
+    noButton.animate(
+        [
+            { transform: "translate(0, 0) scale(1)" },
+            { transform: "translate(0, 0) scale(1.08)", offset: 0.45 },
+            { transform: "translate(0, 0) scale(1)" }
+        ],
+        { duration: 220, easing: "ease-out" }
+    );
 }
-noButton.addEventListener("mouseenter", moveNoButton);
-noButton.addEventListener("touchstart", event => { event.preventDefault(); moveNoButton(); }, { passive: false });
+
+noButton.addEventListener("pointerenter", event => moveNoButton(event.clientX, event.clientY));
+noButton.addEventListener("pointerdown", event => {
+    event.preventDefault();
+    moveNoButton(event.clientX, event.clientY);
+});
+noButton.addEventListener("touchstart", event => {
+    event.preventDefault();
+    const touch = event.touches[0];
+    moveNoButton(touch.clientX, touch.clientY);
+}, { passive: false });
+window.addEventListener("resize", () => {
+    if (noButtonHasMoved) moveNoButton();
+});
 
 function selectPlace(place) { selectedPlace = place; goToPage(3); }
 function selectDay(day) { selectedDayName = day; goToPage(4); }
