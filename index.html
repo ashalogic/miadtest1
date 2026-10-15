@@ -341,6 +341,11 @@ button:hover{
                 <span>موتورسواری</span>
             </button>
 
+            <button class="option" onclick="selectPlace('سینما 🎬')">
+                🎬
+                <span>سینما</span>
+            </button>
+
         </div>
 
     </div>
@@ -653,13 +658,13 @@ function selectTime(){
     ========================= */
 
     const googleFormURL =
-        "https://docs.google.com/forms/d/e/1FAIpQLSch7UA09CNf-HLKTwNowG-yxahm7JxlBDCy4gHSEk_Va_jv9A/formResponse";
+        "https://docs.google.com/forms/d/e/1FAIpQLSfGurzOpeGmiNCAON1h8Np5jSJCdw4Kz1TCJNiFWlpCLLeVLA/formResponse";
 
     const formData = new URLSearchParams();
 
     formData.append(
         "entry.587914817",
-        selectedPlace
+        selectedPlace.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F]/gu, "").trim()
     );
 
     formData.append(
