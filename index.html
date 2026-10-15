@@ -168,9 +168,9 @@ function selectDay(day) { selectedDayName = day; goToPage(4); }
 function submitToGoogleForms() {
     const googleFormURL = "https://docs.google.com/forms/d/e/1FAIpQLSfGurzOpeGmiNCAON1h8Np5jSJCdw4Kz1TCJNiFWlpCLLeVLA/formResponse";
     const fields = {
-        "entry.587914817": selectedPlace.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F]/gu, "").trim(),
-        "entry.1140381372": selectedDayName,
-        "entry.2042874600": selectedTime
+        "entry.1168906527": selectedPlace.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F]/gu, "").trim(),
+        "entry.845176421": selectedDayName,
+        "entry.1004992535": selectedTime
     };
     let frame = document.getElementById("google-form-submit");
     if (!frame) {
