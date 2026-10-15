@@ -36,7 +36,7 @@ button {
     border: 0; outline: 0; cursor: pointer; padding: 15px 35px; border-radius: 50px;
     font-size: 18px; font-weight: bold; transition: transform .25s, background .25s;
 }
-button:hover { transform: scale(1.08); }
+button:hover { transform: scale(1.08); }\n.no:hover { transform: none; }
 .yes { background: #00c853; color: white; }
 .no { background: #ff1744; color: white; position: relative; }
 .footer { position: fixed; bottom: 15px; left: 0; width: 100%; text-align: center; font-size: 14px; opacity: .85; z-index: 10; pointer-events: none; }
@@ -52,7 +52,7 @@ button:hover { transform: scale(1.08); }
 .day:hover { background: rgba(255,255,255,.3); }
 .time-box { margin-top: 25px; }
 .time-box input { width: 100%; padding: 18px; border: 0; border-radius: 20px; font-size: 22px; text-align: center; outline: none; }
-.continue { margin-top: 20px; background: #00c853; color: white; }
+.continue { margin-top: 20px; background: #00c853; color: white; }\n.form-submit { display: inline-block; margin-top: 20px; padding: 15px 24px; border-radius: 50px; background: #1877f2; color: white; text-decoration: none; font-weight: bold; }
 .summary { margin: 25px 0; line-height: 2.2; font-size: 18px; }
 .thanks { font-size: 20px; line-height: 2; }
 .floating-heart { position: fixed; bottom: -50px; pointer-events: none; animation: floatHeart linear forwards; z-index: 1; }
@@ -131,7 +131,7 @@ button:hover { transform: scale(1.08); }
         </div>
         <p class="thanks">خیلی ممنون که قبول کردی. 🥹❤️<br>امیدوارم یه روز فوق‌العاده کنار هم داشته باشیم و کلی خاطره قشنگ بسازیم. 🌹</p>
         <br>
-        <p>💖 منتظر دیدنت هستم 💖</p>
+        <p>💖 منتظر دیدنت هستم 💖</p>\n        <p>برای ثبت نهایی پاسخ‌ها، دکمه زیر را بزن و فرم گوگل را ارسال کن:</p>\n        <a id="googleFormLink" class="form-submit" target="_blank" rel="noopener noreferrer">ثبت نهایی در فرم گوگل</a>
     </div>
 </section>
 <div class="footer">For You ❤️ — Miad</div>
@@ -153,46 +153,35 @@ function goToPage(pageNumber) {
 const noButton = document.getElementById("noButton");
 let noButtonHasMoved = false;
 
-function moveNoButton(pointerX, pointerY) {
-    const margin = 16;
-    const buttonWidth = noButton.offsetWidth;
-    const buttonHeight = noButton.offsetHeight;
-    const maxX = Math.max(margin, window.innerWidth - buttonWidth - margin);
-    const maxY = Math.max(margin, window.innerHeight - buttonHeight - margin);
+function moveNoButton(pointerX = window.innerWidth / 2, pointerY = window.innerHeight / 2) {
+    const margin = 24;
+    const width = noButton.offsetWidth;
+    const height = noButton.offsetHeight;
+    const maxLeft = Math.max(margin, document.documentElement.clientWidth - width - margin);
+    const maxTop = Math.max(margin, window.innerHeight - height - margin);
+    const positions = [
+        { left: margin, top: margin },
+        { left: maxLeft, top: margin },
+        { left: margin, top: maxTop },
+        { left: maxLeft, top: maxTop }
+    ];
     const current = noButton.getBoundingClientRect();
-    const pointer = Number.isFinite(pointerX) ? { x: pointerX, y: pointerY } : null;
-    const candidates = [];
-
-    for (let i = 0; i < 24; i++) {
-        const x = margin + Math.random() * Math.max(0, maxX - margin);
-        const y = margin + Math.random() * Math.max(0, maxY - margin);
-        const dx = x + buttonWidth / 2 - (pointer ? pointer.x : current.left + buttonWidth / 2);
-        const dy = y + buttonHeight / 2 - (pointer ? pointer.y : current.top + buttonHeight / 2);
-        const distance = Math.hypot(dx, dy);
-        const currentDistance = Math.hypot(x - current.left, y - current.top);
-        candidates.push({ x, y, score: distance + currentDistance * 0.35 });
-    }
-
-    candidates.sort((a, b) => b.score - a.score);
-    let destination = candidates[0];
-    if (noButtonHasMoved && candidates.length > 1) {
-        const currentDistance = Math.hypot(destination.x - current.left, destination.y - current.top);
-        if (currentDistance < 100) destination = candidates[1];
-    }
+    const choices = positions
+        .filter(pos => !noButtonHasMoved || Math.hypot(pos.left - current.left, pos.top - current.top) > 80)
+        .map(pos => ({
+            ...pos,
+            distance: Math.hypot(pos.left + width / 2 - pointerX, pos.top + height / 2 - pointerY)
+        }))
+        .sort((a, b) => b.distance - a.distance);
+    const destination = choices[0] || positions[0];
 
     noButtonHasMoved = true;
     noButton.style.position = "fixed";
-    noButton.style.left = destination.x + "px";
-    noButton.style.top = destination.y + "px";
-    noButton.style.zIndex = "20";
-    noButton.animate(
-        [
-            { transform: "translate(0, 0) scale(1)" },
-            { transform: "translate(0, 0) scale(1.08)", offset: 0.45 },
-            { transform: "translate(0, 0) scale(1)" }
-        ],
-        { duration: 220, easing: "ease-out" }
-    );
+    noButton.style.left = Math.min(maxLeft, Math.max(margin, destination.left)) + "px";
+    noButton.style.top = Math.min(maxTop, Math.max(margin, destination.top)) + "px";
+    noButton.style.right = "auto";
+    noButton.style.bottom = "auto";
+    noButton.style.transform = "none";
 }
 
 noButton.addEventListener("pointerenter", event => moveNoButton(event.clientX, event.clientY));
@@ -202,46 +191,27 @@ noButton.addEventListener("pointerdown", event => {
 });
 noButton.addEventListener("touchstart", event => {
     event.preventDefault();
-    const touch = event.touches[0];
+    const touch = event.changedTouches[0];
     moveNoButton(touch.clientX, touch.clientY);
 }, { passive: false });
 window.addEventListener("resize", () => {
-    if (noButtonHasMoved) moveNoButton();
+    if (!noButtonHasMoved) return;
+    const maxLeft = Math.max(24, document.documentElement.clientWidth - noButton.offsetWidth - 24);
+    const maxTop = Math.max(24, window.innerHeight - noButton.offsetHeight - 24);
+    noButton.style.left = Math.min(maxLeft, Math.max(24, parseFloat(noButton.style.left) || 24)) + "px";
+    noButton.style.top = Math.min(maxTop, Math.max(24, parseFloat(noButton.style.top) || 24)) + "px";
 });
 
 function selectPlace(place) { selectedPlace = place; goToPage(3); }
 function selectDay(day) { selectedDayName = day; goToPage(4); }
 
-function submitToGoogleForms() {
-    const googleFormURL = "https://docs.google.com/forms/d/e/1FAIpQLSfGurzOpeGmiNCAON1h8Np5jSJCdw4Kz1TCJNiFWlpCLLeVLA/formResponse";
-    const fields = {
-        "entry.1168906527": selectedPlace.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F]/gu, "").trim(),
-        "entry.845176421": selectedDayName,
-        "entry.1004992535": selectedTime
-    };
-    let frame = document.getElementById("google-form-submit");
-    if (!frame) {
-        frame = document.createElement("iframe");
-        frame.name = "google-form-submit";
-        frame.id = "google-form-submit";
-        frame.hidden = true;
-        document.body.appendChild(frame);
-    }
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = googleFormURL;
-    form.target = frame.name;
-    form.hidden = true;
-    Object.entries(fields).forEach(([name, value]) => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = name;
-        input.value = value;
-        form.appendChild(input);
-    });
-    document.body.appendChild(form);
-    form.submit();
-    form.remove();
+function buildGoogleFormUrl() {
+    const url = new URL("https://docs.google.com/forms/d/e/1FAIpQLSfGurzOpeGmiNCAON1h8Np5jSJCdw4Kz1TCJNiFWlpCLLeVLA/viewform");
+    url.searchParams.set("usp", "pp_url");
+    url.searchParams.set("entry.1168906527", selectedPlace.replace(/[\\p{Emoji_Presentation}\\p{Extended_Pictographic}\\uFE0F]/gu, "").trim());
+    url.searchParams.set("entry.845176421", selectedDayName);
+    url.searchParams.set("entry.1004992535", selectedTime);
+    return url.toString();
 }
 
 function selectTime() {
